@@ -1,0 +1,13 @@
+transformers
+torch
+requests 
+beautifulsoup4 
+pandas 
+numpy
+vaderSentiment
+selenium
+webdriver-manager
+google-api-python-client
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2
