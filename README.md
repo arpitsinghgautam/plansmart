@@ -3,7 +3,7 @@
 
 
 ## 💡Inspiration
-Neighborlynest was inspired by my desire to support and empower small businesses and local communities in their journey towards success. I recognized the challenges faced by these entities in a fast-paced, digital world and wanted to provide them with innovative tools and resources to thrive.
+As the sole developer working on PlanSmart, I sought inspiration from my younger brother and sister, who are currently in high school. I wanted to address a common and significant problem faced by students of all ages: the challenge of finding good study materials. Amongst the various obstacles, the most time-consuming task is researching and determining the best courses to take for a particular field of study. It was this issue that motivated me to create PlanSmart.
 
 ## ⚙ What it does
 PlanSmart is an innovative platform designed to alleviate one of the biggest challenges faced by students: finding the best study materials. The goal of PlanSmart is to streamline the process of selecting courses and materials, saving students valuable time and effort in their educational journey.
