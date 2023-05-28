@@ -13,3 +13,5 @@ google-auth-oauthlib
 google-auth-httplib2
 streamlit
 streamlit-auth0-component
+PyPDF
+docx2txt
