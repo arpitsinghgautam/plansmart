@@ -5,12 +5,20 @@ from PyPDF2 import PdfReader
 import docx2txt
 import os
 import youtube_listing_videos_to_csv
-
+import youtubescraper
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+import requests
+from bs4 import BeautifulSoup
+import re
+import pandas as pd
 # Authenticate and create the YouTube API service
 # youtube = youtube_listing_videos_to_csv.authenticate()
+tokenizer = AutoTokenizer.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
+model = AutoModelForSequenceClassification.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
 
 def main():
-        image_file = 'assets/background/sidebar_bg_2.jpg'
+        image_file = 'assets/background/sidebar_bg_3.jpg'
         with open(image_file, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read())
         st.markdown(
@@ -44,7 +52,7 @@ def main():
         
         
 def show_plan_smart_app():
-    smart_app_image_file = 'assets/background/main_bg_1.jpg'
+    smart_app_image_file = 'assets/background/main_bg_6.jpg'
     with open(smart_app_image_file, "rb") as smart_app_image_file:
         smart_app_encoded_string = base64.b64encode(smart_app_image_file.read())
     st.markdown(
@@ -59,10 +67,10 @@ def show_plan_smart_app():
         unsafe_allow_html=True
         )
     # PlanSmart App section
-    st.title('PlanSmart App')
-    
+    st.title('Plan Smart')
+    st.write(' ### Spend Less Time Planning, More Time Excelling')
     # Add file upload button
-    uploaded_file = st.file_uploader('Upload a file', type=['pdf', 'doc', 'docx'])
+    uploaded_file = st.file_uploader('Upload your syllabus here:', type=['pdf', 'doc', 'docx'])
     
     # Process the uploaded file
     if uploaded_file is not None:
@@ -88,8 +96,54 @@ def show_plan_smart_app():
         else:
             st.write('Unsupported file format. Please upload a PDF or Word document.')
 
-    courses = ['Partial ordering relations', 'Poset', 'Lattices', 'Basic Properties of Lattices', 'Distributive', 'complemented lattices', 'Boolean lattices', 'Boolean Algebra', 'Propositional', 'Predicate']
+        courses = text.split(", ")
+        youtubevideolist = ['https://www.youtube.com/watch?v=h5Lv5ZeNl0g', 'https://www.youtube.com/watch?v=saAkSk_arPA']
+        videos_output=[]
+        for video in youtubevideolist:
+            title, commentlist, views = youtubescraper.ScrapComment(video)
+            num_comments = len(commentlist)
+            score_list=[]
+            scoretotal=0
+            input_list = commentlist
+            for input_text in input_list:
+                tokens = tokenizer.encode(input_text, return_tensors='pt')
+                result = model(tokens)
+                result.logits
+                score = int(torch.argmax(result.logits))+1
+                scoretotal += score
+                score_list.append(score)
+            
+            sentiment_score = scoretotal/len(score_list)
+            video_data = {
+                'title': title,
+                'sentiment_score': sentiment_score,
+                'comments': num_comments,
+                'views': views
+                }
+        videos_output.append(video_data)
 
+        for video in videos_output:
+            # Weighted scores
+            sentiment_score_weighted = video['sentiment_score'] * 0.5
+            views_per_day_weighted = (video['views']) * 0.25
+            likes_comments_weighted = (video['comments']) * 0.25
+
+            # Overall score
+            overall_score = sentiment_score_weighted + views_per_day_weighted + likes_comments_weighted
+            video['overall_score'] = overall_score
+
+        # Sorting videos based on overall score
+        videos_output.sort(key=lambda x: x['overall_score'], reverse=True)
+
+        # Assigning ranks to videos
+        for rank, video in enumerate(videos_output, start=1):
+            video['rank'] = rank
+
+        # Printing the ranked videos
+        for video in videos_output:
+            st.write(f"Rank: {video['rank']}, Title: {video['title']}, Overall Score: {video['overall_score']}")
+
+                
     # for course in courses:
     #     search_query = course
     #     st.write(search_query)
@@ -102,7 +156,7 @@ def show_plan_smart_app():
 
 
 def how_to_use():
-    how_to_use_image_file = 'assets/background/main_bg_4.jpg'
+    how_to_use_image_file = 'assets/background/main_bg_5.jpg'
     with open(how_to_use_image_file, "rb") as how_to_use_image_file:
         how_to_use_encoded_string = base64.b64encode(how_to_use_image_file.read())
     st.markdown(
@@ -142,7 +196,7 @@ def how_to_use():
     
 
 def show_about_plan_smart():
-    image_file = 'assets/background/main_bg_2.jpg'
+    image_file = 'assets/background/main_bg_9.jpg'
     with open(image_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     st.markdown(
@@ -158,11 +212,24 @@ def show_about_plan_smart():
         )
     # About PlanSmart section
     st.title('About PlanSmart')
-    st.write('Detailed information about PlanSmart goes here.')
+    st.write('''
+    # Summary
+    PlanSmart is an innovative platform designed to alleviate one of the biggest challenges faced by students: finding the best study materials. The goal of PlanSmart is to streamline the process of selecting courses and materials, saving students valuable time and effort in their educational journey. \n
+    The core functionality of PlanSmart revolves around the intelligent recommendation of videos based on a given syllabus. By leveraging web scraping techniques, PlanSmart gathers data from popular platforms such as YouTube, Coursera, and other online learning platforms. The platform then utilizes sentiment analysis to evaluate the content of these videos, assessing factors such as the quality of explanations, relevance to the topic, and overall user sentiment. This analysis helps to identify the best video resources for each topic within the syllabus.\n
+    To further enhance the user experience, PlanSmart incorporates a ranking and recommendation system. Videos are assigned scores based on various factors, including sentimental analysis results, the number of views per day, and the number of likes and comments. These scores are then used to create an index ranging from 1 to 10, with the video with the highest score being ranked as the best option. This ranking system ensures that students are provided with the highest-quality videos for each topic, empowering them to make informed decisions about their study materials.\n
+    # Working 
+    PlanSmart goes beyond simply recommending videos by offering a comprehensive study plan generation feature. The recommended videos are organized into a structured study plan, providing students with a clear roadmap to follow in their learning journey. This study plan takes into account the duration and complexity of each video, allowing students to optimize their study schedule and ensure efficient progress through their syllabus.\n
+    In addition to the study plan and video recommendations, PlanSmart incorporates a coin-based reward system. Students earn coins by completing their syllabus or achieving certain milestones. These coins can be redeemed for various rewards within the platform, such as accessing additional features, exclusive content, or even discounts on educational resources. The reward system aims to motivate and incentivize students, making the learning process more engaging and enjoyable.\n
+    PlanSmart also places a strong emphasis on user experience and accessibility. The platform features a user-friendly and intuitive interface developed using Streamlit, enabling students to easily navigate through the site and access the recommended resources. Integration with authentication services, such as Auth0, ensures secure user logins and protects personal information. \n
+    # Future Aspects
+    Looking towards the future, PlanSmart has ambitious plans for expansion. This includes incorporating support for additional learning platforms, such as Udemy and Skillshare, to provide a broader range of study materials for students. The platform will continue to evolve, integrating new features and functionalities to cater to the diverse needs of students across various educational levels and subjects. \n
+    # Summary
+    In summary, PlanSmart aims to revolutionize the way students discover and access study materials by leveraging sentiment analysis, ranking and recommendation algorithms, and a user-friendly interface. With its comprehensive study plan generation, coin-based reward system, and focus on user experience, PlanSmart is poised to empower students in their educational pursuits, helping them save time, make informed decisions, and achieve academic excellence. \n 
+    ''')
 
 
 def show_rewards():
-    image_file = 'assets/background/main_bg_2.jpg'
+    image_file = 'assets/background/main_bg_8.jpg'
     with open(image_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     st.markdown(

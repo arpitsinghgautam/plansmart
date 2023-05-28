@@ -33,13 +33,12 @@ def ScrapComment(url):
     title = title_text_div and title_text_div.text
     comment_div = soup.select("#content #content-text")
     comment_list = [x.text for x in comment_div]
-    print(title, comment_list)
+    views_text_span = soup.select_one('.view-count')
+    views = views_text_span and views_text_span.text.strip()
+    views_str = ''.join(filter(str.isdigit, views))
+    views_int = int(views_str)
+    return title, comment_list, views_int
+    
 
 
-if __name__ == "__main__":
-    urls = [
-        "https://www.youtube.com/watch?v=cgNQgcUgq0U",
-        "https://www.youtube.com/watch?v=MkE_EwO76b0",
-        'https://www.youtube.com/watch?v=XVv6mJpFOb0',
-    ]
-    ScrapComment(urls[0])
+
